@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import Head from 'next/head';
-import { RandomFoxExplicit } from '@/components/RandomFox';
+import { LazyImage } from '@/components/LazyImage';
+import type { MouseEventHandler } from 'react';
 
 // Generate random number
 const random = (): number => Math.floor(Math.random() * 123) + 1;
@@ -8,29 +9,28 @@ const random = (): number => Math.floor(Math.random() * 123) + 1;
 // Generate simple unique id
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
-type ImageItems = {
+type ImageItem = {
   id: string;
   url: string
 }
 
 export default function Home() {
-  const [images, setImages] = useState<Array<ImageItems>>([
-    { id: generateId(), url: `https://randomfox.ca/images/${random()}.jpg` },
-    { id: generateId(), url: `https://randomfox.ca/images/${random()}.jpg` },
-    { id: generateId(), url: `https://randomfox.ca/images/${random()}.jpg` },
-    { id: generateId(), url: `https://randomfox.ca/images/${random()}.jpg` }
-  ]);
+  const [images, setImages] = useState<Array<ImageItem>>([]);
 
-  const handleAddNewFox = () => {
-    const newImageItem = {
+  const handleAddNewFox: MouseEventHandler<HTMLButtonElement> = (event) => {
+    event.preventDefault();
+    const newImageItem: ImageItem = {
       id: generateId(),
       url: `https://randomfox.ca/images/${random()}.jpg`
     };
-    setImages((prevImages) => ({
+    setImages((prevImages) => [
       ...prevImages,
       newImageItem,
-    }));
+    ]);
   };
+
+  const handleLazyLoad = useCallback((node: HTMLImageElement) =>
+    console.log('Ya cargo, y esta disponible la imagen para desplegarla. Nodo:', node), []);
 
   return (
     <>
@@ -43,11 +43,19 @@ export default function Home() {
       <main>
         <h1 className="text-3xl font-bold underline">Hello, Platzi!</h1>
         <button onClick={handleAddNewFox}>Add new fox</button>
-        {images.map(({ id, url }, index) => (
+        {images.length > 0 ? images.map(({ id, url }, index) => (
           <div key={`${index}-${id}`} className='p-4'>
-            <RandomFoxExplicit image={url} alt={`fox image ${index}`} />
+            <LazyImage
+              src={url}
+              alt={`fox image ${index}`}
+              width={320}
+              height={'auto'}
+              className='rounded bg-gray-300'
+              onClick={() => console.log('CLICK')}
+              onLazyLoad={handleLazyLoad}
+            />
           </div>
-        ))}
+        )) : null}
       </main>
     </>
   )
