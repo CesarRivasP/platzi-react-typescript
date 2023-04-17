@@ -42,6 +42,12 @@ export const LazyImage = ({
             }
             return prevState;
           });
+          window.plausible("add_fox", {
+            callback: () => { },
+            props: {
+              'example': 'caracas'
+            }
+          });
         }
       });
     });
